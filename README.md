@@ -18,7 +18,8 @@ metal on ice wherever it stands. And the grip of tyres drops with gravity twice 
 
 **How this was made.** This fix was written with the help of Claude, an AI, then read and checked by a human. I say
 so up front because a contribution made with an AI deserves a closer look, and because some will prefer to stop here.
-What there is to check is small: two changes to how the game computes the grip of a wheel, described below.
+What there is to check is small: two changes to how the game computes the grip of a wheel, and the physic materials
+of the terrain and of the parts, described below.
 
 ## The causes
 
@@ -31,6 +32,12 @@ they hold a tenth of their load, about a 6° slope, whatever they stand on.
 (`ModuleWheelBase.ApplyGeeBias`): ×2 on Kerbin, ×0.67 on the Mun, ×0.48 on Minmus, ×3.1 on Eve. The weight a tyre
 carries already follows gravity: its grip went as the square of gravity.
 
+**One friction for everything that touches the ground without wheels.** A part with no physic material of its own gets
+the game's default, "Metal": 0.25, combined with the other collider by its maximum. Against it, no terrain can lower the
+friction: a capsule on its side, or a lander resting on its engines, holds on ice as on rock. (On a flat contact, PhysX
+caps the friction of each of the two anchors of the contact at the coefficient times the normal force of the whole
+contact: two parts actually rub at 0.5.)
+
 ## What the fix does
 
 - **The grip of the terrain.** Each wheel gets a grip that depends on what it is made of (a tyre, the metal foot of a
@@ -41,16 +48,23 @@ carries already follows gravity: its grip went as the square of gravity.
   Kerbin, grip rises on every smaller body, and drops by a third on Eve, the only body above 1 g, where a tyre still
   holds 1.7 times what it holds on Kerbin. The friction slider of the wheels, in manual, works as before.
 
-Each of the two can be turned off in `KSPFixTerrainGrip\PluginData\settings.cfg` (`terrainGrip`,
-`kerbinAutoFriction`), read when KSP starts.
+- **The friction of the terrain.** The collider of each terrain quad gets the physic material of the material of the
+  biome under its centre, combined by multiplication; so do the parts without a physic material of their own, at a
+  value that leaves two parts rubbing as in the game. A part resting on the terrain gets the friction of its material:
+  a lander on its engines holds on rock and slides on ice. The grip pads of Breaking Ground keep their values,
+  multiplied too; the buildings of the space centre are concrete.
+
+Each of the three can be turned off in `KSPFixTerrainGrip\PluginData\settings.cfg` (`terrainGrip`,
+`terrainFriction`, `kerbinAutoFriction`), read when KSP starts.
 
 ## Configuration packs
 
 The fix changes nothing on a body no configuration pack names: install at least one. `KSPFixTerrainGripStock` gives
 the terrain of the stock bodies, biome by biome; `KSPFixTerrainGripRSS` that of the bodies of
 [Real Solar System](https://github.com/KSP-RO/RealSolarSystem) (it needs ModuleManager, and does nothing without RSS).
-Both can stay installed together: with RSS, the stock bodies are gone, and their pack names none of its bodies. The materials and their grips are in
-`KSPFixTerrainGrip\TerrainGrip.cfg`; the bodies of a pack in nodes any mod can add to or patch with ModuleManager:
+Both can stay installed together: with RSS, the stock bodies are gone, and their pack names none of its bodies. The
+materials and their frictions are in `KSPFixTerrainGrip\TerrainGrip.cfg`, one value per material for the wheels and the
+terrain alike; the bodies of a pack in nodes any mod can add to or patch with ModuleManager:
 
 ```
 TERRAINGRIP_BODY
@@ -113,6 +127,17 @@ With the fix, the rocket no longer moves on the grass, and still slides on the i
   harder than its small weight holds down. The traction control of the wheels limits their torque with gravity, but at
   its default setting, not enough; set higher, it leaves too little torque to climb a slope.
 - Wheels of other mods with their own friction model are left as they are.
+- **A base already standing on an icy slope may start sliding** once the fix is installed. The game anchors a landed
+  vessel to the ground only after it has stood still for a while, and not right after loading.
+- **Parts whose physic material another mod chose keep it.** One combined by its maximum ignores the terrain: it keeps
+  its own friction on ice as on rock.
+- **One material per terrain quad**, the one of the biome under its centre: near the border of two biomes, a quad
+  may have the material of the other (a quad is about 1.7 km wide on Kerbin, 190 m on the Mun). The wheels read the
+  biome under each contact.
+- **A kerbal on its feet ignores the terrain.** Walking up or down an icy slope, or standing on it, a kerbal holds as
+  on rock: the game moves it its own way, without friction. Fallen over, it slides on ice.
+- **The fix replaces the physic material other mods give the terrain**: the one Kopernicus gives every body (Kerbin's,
+  0.9 combined by its maximum), and the one Parallax gives the Mun (0.6).
 
 ## Work in progress
 

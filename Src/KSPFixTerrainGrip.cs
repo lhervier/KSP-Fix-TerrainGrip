@@ -32,6 +32,19 @@ namespace com.github.lhervier.ksp.fix.terraingrip
                     Log.Error($"Could not patch automatic friction, it drops with gravity as in the game: {e}");
                 }
             }
+            if (TerrainFriction.Enabled)
+            {
+                try
+                {
+                    TerrainFriction.Install(new Harmony(HarmonyId + ".terrainfriction"));
+                    ContactMaterials.Install();
+                    Log.Info("Terrain friction installed");
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Could not install the terrain friction, the terrain's colliders keep the game's: {e}");
+                }
+            }
             if (TerrainGripManager.Enabled)
             {
                 try

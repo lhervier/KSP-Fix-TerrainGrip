@@ -31,6 +31,7 @@ namespace com.github.lhervier.ksp.fix.terraingrip
             Log.Level = ReadEnum(node, "logLevel", Log.Level, path);
             TerrainGripManager.Enabled = ReadBool(node, "terrainGrip", TerrainGripManager.Enabled, path);
             AutoFrictionCurve.Enabled = ReadBool(node, "kerbinAutoFriction", AutoFrictionCurve.Enabled, path);
+            TerrainFriction.Enabled = ReadBool(node, "terrainFriction", TerrainFriction.Enabled, path);
         }
 
         /// <summary>
