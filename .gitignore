@@ -1,0 +1,4 @@
+obj/
+GameData/KSPFixTerrainGrip/*.dll
+GameData/*.zip
+__pycache__/
